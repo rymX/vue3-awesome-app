@@ -1,0 +1,11 @@
+<script>
+export default{
+  props :['data']
+}
+</script>
+
+<template>
+  <div >
+    <h1>{{ data }}</h1>
+  </div>
+</template>
