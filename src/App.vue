@@ -3,18 +3,33 @@
 
 <script>
 import Card from './components/Card.vue'
-
+import VueTailwindPagination from '@ocrv/vue-tailwind-pagination'
+import '@ocrv/vue-tailwind-pagination/styles'
 export default {
   name: 'app',
-  components: { Card },
+  components: { Card  , VueTailwindPagination},
   data() {
     return {
+
+
+      currentPage: 1,
+      perPage: 20,
+      total: 0,
       searchtext: '',
       test: 'hello world ',
       apis: [],
       searchByCategory: [],
       categories: [],
-      searcharray :[]
+      searcharray: [],
+
+      currentItems : null,
+      pageCount : 0,
+      itemOffset : 0 
+
+
+      // curret : page number 
+      // total : nb of records
+      // perpage : 20 
     }
   },
   mounted() {
@@ -30,26 +45,38 @@ export default {
       .then(data => {
         this.apis = data.entries
         this.searchByCategory = data.entries
-        console.log(data.entries);
+
+        const itemOffset = 0;
+      const endOffset = itemOffset + 20;
+      this.currentItems = data.entries.slice(itemOffset, endOffset)
+      this.pageCount =Math.ceil(data.entries.length / 20)
+      console.log(this.currentItems);
       })
       .catch(err => console.log(err))
+
+
   },
 
   methods: {
+
+    onPageClick (page) {
+      console.log(page)
+    }
+    ,
     onhandleSearch(event) {
 
       if (event.target.value !== "") {
         const newApiList = this.searchByCategory.filter((api) => {
           return api.API.toLowerCase().includes(event.target.value.toLowerCase());
         });
-        if(newApiList.length == 0){
+        if (newApiList.length == 0) {
           console.log("no search result");
           // noti
         }
         this.searcharray = newApiList
       }
-      else if (event.target.value == ""){
-        this.searcharray =[];
+      else if (event.target.value == "") {
+        this.searcharray = [];
       }
     }
     ,
@@ -93,16 +120,25 @@ export default {
         <a-breadcrumb-item>{{searcharray.length}}</a-breadcrumb-item>
         <a-breadcrumb-item>{{searchByCategory.length}}</a-breadcrumb-item>
       </a-breadcrumb>
-      <div v-if="searchByCategory.length" :style="{ background: '#fff', padding: '24px', minHeight: '380px' }" >
-        <Card :data="test" :table="['name','rym']" />
 
-
+      <div v-if="searchByCategory.length" :style="{ background: '#fff', padding: '24px', minHeight: '380px' }">
+        <Card :currentItems="this.currentItems" />
       </div>
-      <div v-else :style="{ background: '#fff', padding: '24px', minHeight: '380px' }" >
-        <Card :data="test" :table="['no data','rym']" />
-
-
+      <div v-else :style="{ background: '#fff', padding: '24px', minHeight: '380px' }">
+        <Card :loading="true" />
       </div>
+
+      <div>
+  <VueTailwindPagination
+          :current="current" 
+          :total="this.searchByCategory.length"
+          :per-page="perPage"
+          @page-changed="onPageClick"
+/>
+<!-- curret :  page number  -->
+<!-- totla : nb of records  -->
+<!-- per-page : records per page 20 -->
+</div>
     </a-layout-content>
     <a-layout-footer :style="{ textAlign: 'center' }">
       Created with Passion By FRADI Rym
