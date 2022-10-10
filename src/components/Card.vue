@@ -1,10 +1,22 @@
 <script>
-export default{
-  props :{currentItems : [] , 'loading': Boolean}
+
+import { toRaw } from 'vue';
+export default {
+  props: {
+    currentItems: null,
+    parentMsg: Number
+  }
   ,
+  data() {
+    currentapis: []
+  },
+ 
+
   created() {
+    const rawObjectOrArray = toRaw(this.currentItems)
     // props are exposed on `this`
-    console.log(this.currentItems)
+    this.currentapis = rawObjectOrArray
+    console.log(rawObjectOrArray)
   }
 }
 
@@ -12,25 +24,36 @@ export default{
 
 <template>
 
-  <div v-if="loading">
-    <a-card  :loading="loading" title="Card title"  size="small" :hoverable="true" style="width: 280px">
+
+
+  <!-- <a-card-grid  :loading="loading" title="Card title"  size="small" :hoverable="true" style="width: 25%; text-align: center">
       <template #extra>
         <a href="#">More</a>
       </template>
     <p></p>
     <p>Card content</p>
     <p>Card content</p>
-  </a-card>
-  </div>
-  <div v-else>
-    <a-card v-for="api in currentItems" :key="api.API" title="Card title"  size="small" :hoverable="true" style="width: 280px" >
+  </a-card-grid> -->
+  <div v-for="api in currentapis" :key="api.API">
+
+    <a-card :title="api['API']" size="small" :hoverable="true" :style="{width: '250px' , margin: '15px'}">
       <template #extra>
-        <a href="#">More</a>
+        <a :href="api['Link']">More</a>
       </template>
-    <p>{{currentItems.length}}</p>
-    <p></p>
-    <p>Card content</p>
-  </a-card>
+      <p>{{parentMsg}}</p>
+      <p>{{api["API"]}}</p>
+      <p>Category : {{api["Category"]}}</p>
+      <p>Description :{{api["Description"]}} </p>
+
+    </a-card>
   </div>
 
 </template>
+
+<style scoped>
+p {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+</style>

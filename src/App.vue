@@ -3,28 +3,27 @@
 
 <script>
 import Card from './components/Card.vue'
+import { toRaw } from 'vue';
+
 import VueTailwindPagination from '@ocrv/vue-tailwind-pagination'
+
 import '@ocrv/vue-tailwind-pagination/styles'
 export default {
   name: 'app',
-  components: { Card  , VueTailwindPagination},
+  components: { Card, VueTailwindPagination },
   data() {
     return {
-
-
       currentPage: 1,
       perPage: 20,
       total: 0,
       searchtext: '',
-      test: 'hello world ',
       apis: [],
       searchByCategory: [],
       categories: [],
       searcharray: [],
-
-      currentItems : null,
-      pageCount : 0,
-      itemOffset : 0 
+      currentItems: null,
+      pageCount: 0,
+      itemOffset: 0,
 
 
       // curret : page number 
@@ -45,12 +44,10 @@ export default {
       .then(data => {
         this.apis = data.entries
         this.searchByCategory = data.entries
-
         const itemOffset = 0;
-      const endOffset = itemOffset + 20;
-      this.currentItems = data.entries.slice(itemOffset, endOffset)
-      this.pageCount =Math.ceil(data.entries.length / 20)
-      console.log(this.currentItems);
+        const endOffset = itemOffset + 20;
+        this.currentItems = data.entries.slice(itemOffset, endOffset)
+        this.pageCount = Math.ceil(data.entries.length / 20)
       })
       .catch(err => console.log(err))
 
@@ -59,8 +56,18 @@ export default {
 
   methods: {
 
-    onPageClick (page) {
-      console.log(page)
+    onPageClick(page) {
+      const newoffset = ((page-1) * 20) % this.searchByCategory.length
+      console.log(newoffset);
+      this.itemOffset = newoffset;
+      const endoffset = newoffset + 20;
+      // const categories = this.searchByCategory
+      // const rawObjectOrArray = categories.slice(newoffset, endoffset);
+      console.log(this.searchByCategory.slice(newoffset, endoffset));
+      this.currentItems = this.searchByCategory.slice(newoffset, endoffset);
+      this.pageCount = Math.ceil(this.searchByCategory.length / 20)
+      this.currentPage = page
+      window.scrollTo(0,0);
     }
     ,
     onhandleSearch(event) {
@@ -81,16 +88,21 @@ export default {
     }
     ,
     onhandlSelectCategory(event) {
-
-      console.log(event.target.value);
-
       if (event.target.value == "allCategories") {
         this.searchByCategory = this.apis;
+        this.currentItems = this.apis.slice(0, 20)
+        this.pageCount = Math.ceil(this.apis.length / 20)
+
       } else {
         const newApiList = this.apis.filter((api) => {
           return api.Category.toLowerCase() === event.target.value.toLowerCase();
         });
-        this.searchByCategory = newApiList;
+      // this.currentItems = newApiList.slice(newoffset, endOffset);
+       // this.searchByCategory = newApiList;
+       // const rawObjectOrArray = toRaw(newApiList)
+        this.currentItems = newApiList.slice(0, 20);
+        this.searchByCategory = newApiList
+        this.pageCount = Math.ceil(newApiList.length / 20)
       }
     }
   }
@@ -120,37 +132,44 @@ export default {
         <a-breadcrumb-item>{{searcharray.length}}</a-breadcrumb-item>
         <a-breadcrumb-item>{{searchByCategory.length}}</a-breadcrumb-item>
       </a-breadcrumb>
+      <div :style="{ padding: '24px', minHeight: '380px' }">
 
-      <div v-if="searchByCategory.length" :style="{ background: '#fff', padding: '24px', minHeight: '380px' }">
-        <Card :currentItems="this.currentItems" />
-      </div>
-      <div v-else :style="{ background: '#fff', padding: '24px', minHeight: '380px' }">
-        <Card :loading="true" />
+        <a-row v-if="currentItems" :xs="{ order: 1 }" :sm="{ order: 2 }" :md="{ order: 4 }" :lg="{ order: 6 }">
+          <div v-for="api in currentItems" :key="api.API">
+
+            <a-card :title="api['API']" size="small" :hoverable="true" :style="{width: '250px' , margin: '15px'}">
+              <template #extra>
+                <a :href="api['Link']">More</a>
+              </template>
+              <p>{{api["API"]}}</p>
+              <p>Category : {{api["Category"]}}</p>
+              <p>Description :{{api["Description"]}} </p>
+
+            </a-card>
+          </div>
+
+        </a-row>
+
+        <a-row v-else type="flex">
+          <!-- <Card :currentItems="currentItems" :parentMsg= "parentMsg" /> -->
+        </a-row>
+        <div>
+          <VueTailwindPagination :current="this.currentPage" :total="this.searchByCategory.length" :per-page="perPage"
+            @page-changed="onPageClick" />
+          <!-- curret :  page number  -->
+          <!-- totla : nb of records  -->
+          <!-- per-page : records per page 20 -->
+        </div>
       </div>
 
-      <div>
-  <VueTailwindPagination
-          :current="current" 
-          :total="this.searchByCategory.length"
-          :per-page="perPage"
-          @page-changed="onPageClick"
-/>
-<!-- curret :  page number  -->
-<!-- totla : nb of records  -->
-<!-- per-page : records per page 20 -->
-</div>
+
+
     </a-layout-content>
     <a-layout-footer :style="{ textAlign: 'center' }">
       Created with Passion By FRADI Rym
     </a-layout-footer>
   </a-layout>
 </template>
-
-
-
-
-
-
 <style>
 #components-layout-demo-fixed .logo {
   width: 120px;
@@ -166,5 +185,10 @@ export default {
 
 [data-theme='dark'] .site-layout .site-layout-background {
   background: #141414;
+}
+p {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 </style>
