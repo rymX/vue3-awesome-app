@@ -9,8 +9,7 @@
   "dependencies": {
     "@ocrv/vue-tailwind-pagination": "^0.0.4",
     "ant-design-vue": "^3.2.12",
-    "vue": "^3.2.38",
-    "vuejs-paginate": "^2.1.0"
+    "vue": "^3.2.38"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.0.3",
